@@ -1,5 +1,7 @@
+import { zValidator } from "@hono/zod-validator";
 import { Hono } from "hono";
 import { cors } from "hono/cors";
+import z from "zod";
 
 const app = new Hono();
 
@@ -10,9 +12,27 @@ app.use(
   })
 );
 
-const route = app.get("/hello", (c) => {
-  return c.json({ message: "hello world" });
+const todoSchema = z.object({
+  title: z.string().min(2),
+  desc: z.string().nullable(),
 });
+
+const route = app
+  .get("/hello", (c) => {
+    return c.json({ message: "hello world" });
+  })
+  .post(
+    "/todo",
+    zValidator("json", todoSchema, (result, c) => {
+      if (!result.success) {
+        return c.text(result.error.issues[0].message, 400);
+      }
+    }),
+    (c) => {
+      const { title, desc } = c.req.valid("json");
+      return c.json({ title, desc });
+    }
+  );
 
 export type AppType = typeof route;
 
