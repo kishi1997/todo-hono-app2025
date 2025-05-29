@@ -33,12 +33,12 @@ export default function Home() {
           name="title"
           className="border-2 border-gray-300 rounded-md p-2"
         />
-        <label htmlFor="description" className="text-sm font-medium">
+        <label htmlFor="desc" className="text-sm font-medium">
           Description
         </label>
         <input
           type="text"
-          name="description"
+          name="desc"
           className="border-2 border-gray-300 rounded-md p-2"
         />
         <button
