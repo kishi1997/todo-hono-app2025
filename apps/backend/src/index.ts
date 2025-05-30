@@ -25,7 +25,7 @@ const todoSchema = z.object({
 });
 
 const route = app
-  .get("/hello", async (c) => {
+  .get("/todos", async (c) => {
     const client = postgres(process.env.DATABASE_URL as string, {
       prepare: false,
     });
