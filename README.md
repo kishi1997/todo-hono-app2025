@@ -1,7 +1,7 @@
 # Todo Hono App 2025
 
 ・Next.js+Hono+Bunを用いて、型安全にWebアプリ開発を行うやり方を簡単なTodoアプリ開発を通じて行う。ZodやDrizzleを用いて、データベースからフロントエンドまでを型安全に開発することも含めています。
-
+・Todoアプリの開発自体は主要な目的から外れるため、Todo追加のみのシンプルな機能のみに（今回のスタックセットが良いと感じれば今後追加して開発するかも）
 ## ✨ 特徴
 
 -   Bun Workspacesを使用したモノレポ構成
@@ -50,14 +50,20 @@
     npm install
     ```
 
-3. 環境変数の設定
+3. **環境変数の設定**
 
 .env.sample を参考に .env ファイルを作成し、必要な環境変数を設定してください。
 ```bash
 cp .env.sample .env
 ```
 
-4.  **開発サーバーを起動します:**
+4.  **マイグレーションを実行**
+作成したマイグレーションファイルをもとに、DBにスキーマが反映(マイグレーションファイルは作成済み：bunx drizzle-kit generate)
+```bash
+bunx drizzle-kit migrate
+```
+
+5.  **開発サーバーを起動します:**
     ```bash
     cd apps/backend && bun run dev
     cd apps/frontend && bun run dev
