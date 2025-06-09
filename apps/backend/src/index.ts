@@ -21,7 +21,8 @@ app.use(
 
 const todoSchema = z.object({
   title: z.string().min(2),
-  desc: z.string().nullable(),
+  description: z.string().nullable(),
+  userId: z.number(),
 });
 
 const route = app
@@ -44,14 +45,14 @@ const route = app
       }
     }),
     async (c) => {
-      const { title, desc } = c.req.valid("json");
+      const { title, description, userId } = c.req.valid("json");
       const client = postgres(process.env.DATABASE_URL as string, {
         prepare: false,
       });
       const db = drizzle({ client });
       const todo = await db
         .insert(todosTable)
-        .values({ title, desc })
+        .values({ title, description, userId })
         .returning();
       return c.json({ todo: todo[0] });
     }
