@@ -1,9 +1,19 @@
-import { login, signup } from "./actions";
+"use client";
+import { useActionState } from "react";
+import { signup, supabaseSignup } from "./actions";
 
 export default function LoginPage() {
+  const signupAction = async (preverror: string | null, formData: FormData) => {
+    const email = formData.get("email") as string;
+    const password = formData.get("password") as string;
+    await supabaseSignup(email, password);
+    await signup(email, password);
+    return null;
+  };
+  const [error, submitAction, isPending] = useActionState(signupAction, null);
   return (
     <div className="flex flex-col items-center justify-center h-screen">
-      <form className="flex flex-col space-y-4 min-w-3xl">
+      <form action={submitAction} className="flex flex-col space-y-4 min-w-3xl">
         <label htmlFor="email" className="font-semibold">
           Email:
         </label>
@@ -25,19 +35,13 @@ export default function LoginPage() {
           className="border border-gray-300 p-2 rounded"
         />
         <button
+          disabled={isPending}
           type="submit"
-          formAction={login}
-          className="bg-blue-500 text-white p-2 rounded hover:bg-blue-600"
-        >
-          Log in
-        </button>
-        <button
-          type="submit"
-          formAction={signup}
           className="bg-green-500 text-white p-2 rounded hover:bg-green-600"
         >
           Sign up
         </button>
+        {error && <p className="text-red-500">{error}</p>}
       </form>
     </div>
   );
