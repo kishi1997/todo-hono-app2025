@@ -1,16 +1,17 @@
-import { zValidator } from "@hono/zod-validator";
 import { Hono } from "hono";
 import { cors } from "hono/cors";
-import z from "zod";
-import postgres from "postgres";
+import { zValidator } from "@hono/zod-validator";
+import { z } from "zod";
+import { todosTable, usersTable } from "./db/schema";
 import { drizzle } from "drizzle-orm/postgres-js";
-import { todosTable } from "./db/schema";
+import postgres from "postgres";
+import "dotenv/config";
 
 export type Env = {
   DATABASE_URL: string;
 };
 
-const app = new Hono();
+const app = new Hono<{ Bindings: Env }>();
 
 app.use(
   "*",
@@ -23,6 +24,10 @@ const todoSchema = z.object({
   title: z.string().min(2),
   description: z.string().nullable(),
   userId: z.number(),
+});
+const userSchema = z.object({
+  email: z.string().email(),
+  password: z.string().min(6),
 });
 
 const route = app
@@ -46,9 +51,7 @@ const route = app
     }),
     async (c) => {
       const { title, description, userId } = c.req.valid("json");
-      const client = postgres(process.env.DATABASE_URL as string, {
-        prepare: false,
-      });
+      const client = postgres(c.env.DATABASE_URL, { prepare: false });
       const db = drizzle({ client });
       const todo = await db
         .insert(todosTable)
@@ -56,8 +59,25 @@ const route = app
         .returning();
       return c.json({ todo: todo[0] });
     }
+  )
+  .post(
+    "/signup",
+    zValidator("json", userSchema, (result, c) => {
+      if (!result.success) {
+        return c.text(result.error.issues[0].message, 400);
+      }
+    }),
+    async (c) => {
+      const client = postgres(c.env.DATABASE_URL, { prepare: false });
+      const db = drizzle({ client });
+      const { email, password } = c.req.valid("json");
+      const user = await db
+        .insert(usersTable)
+        .values({ email, password })
+        .returning();
+      return c.json({ user: user[0] });
+    }
   );
-
 export type AppType = typeof route;
 
 export default app;
