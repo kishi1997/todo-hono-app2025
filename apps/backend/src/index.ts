@@ -31,8 +31,16 @@ const userSchema = z.object({
 });
 
 const route = app
-  .get("/hello", (c) => {
-    return c.json({ message: "Hello Hono!" });
+  .get("/todos", async (c) => {
+    const client = postgres(process.env.DATABASE_URL as string, {
+      prepare: false,
+    });
+    const db = drizzle({ client });
+    const todos = await db.select().from(todosTable);
+    if (todos == null) {
+      return c.text("'Failed to fetch todos', 500");
+    }
+    return c.json({ todos });
   })
   .post(
     "/todo",
@@ -52,15 +60,6 @@ const route = app
       return c.json({ todo: todo[0] });
     }
   )
-  .get("/todos", async (c) => {
-    const client = postgres(c.env.DATABASE_URL, { prepare: false });
-    const db = drizzle({ client });
-    const todos = await db.select().from(todosTable);
-    if (!todos) {
-      return c.text("Failed to fetch todos", 500);
-    }
-    return c.json({ todos });
-  })
   .post(
     "/signup",
     zValidator("json", userSchema, (result, c) => {
