@@ -1,29 +1,48 @@
 import { relations } from "drizzle-orm";
-import { integer, pgTable, varchar, timestamp } from "drizzle-orm/pg-core";
+import {
+  integer,
+  pgTable,
+  pgSchema,
+  uuid,
+  varchar,
+  timestamp,
+} from "drizzle-orm/pg-core";
+import { authUsers } from "drizzle-orm/supabase";
+// Supabase の auth.users を参照するためのスキーマ指定
+// const authSchema = pgSchema("auth");
 
-export const todosTable = pgTable("todos", {
-  id: integer().primaryKey().generatedAlwaysAsIdentity(),
-  userId: integer().notNull(),
-  title: varchar({ length: 255 }).notNull(),
-  description: varchar({ length: 255 }),
-  createdAt: timestamp().notNull().defaultNow(),
+// export const Users = authSchema.table("users", {
+//   id: uuid("id").primaryKey(),
+// });
+
+// Profile テーブル（auth.users に対する 1:1 マッピング）
+export const Profile = pgTable("profile", {
+  id: uuid("id")
+    .primaryKey()
+    .references(() => authUsers.id, { onDelete: "cascade" }),
+  name: varchar("name", { length: 25 }).notNull(),
+  email: varchar("email", { length: 255 }).notNull(),
 });
 
-export const usersTable = pgTable("users", {
-  id: integer().primaryKey().generatedAlwaysAsIdentity(),
-  name: varchar({ length: 255 }),
-  email: varchar({ length: 255 }).notNull().unique(),
-  password: varchar({ length: 255 }).notNull(),
-  createdAt: timestamp().notNull().defaultNow(),
+// Todos テーブル
+export const Todos = pgTable("todos", {
+  id: uuid("id").primaryKey(),
+  profileId: uuid("profile_id")
+    .notNull()
+    .references(() => Profile.id),
+  title: varchar("title", { length: 255 }).notNull(),
+  description: varchar("description", { length: 255 }),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
 });
 
-export const usersRelations = relations(usersTable, ({ many }) => ({
-  todos: many(todosTable),
+// リレーション定義
+export const profileRelations = relations(Profile, ({ many }) => ({
+  todos: many(Todos),
 }));
 
-export const todosRelations = relations(todosTable, ({ one }) => ({
-  user: one(usersTable, {
-    fields: [todosTable.userId],
-    references: [usersTable.id],
+export const todosRelations = relations(Todos, ({ one }) => ({
+  profile: one(Profile, {
+    fields: [Todos.profileId],
+    references: [Profile.id],
   }),
 }));
