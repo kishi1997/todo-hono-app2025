@@ -2,7 +2,7 @@ import { Hono } from "hono";
 import { cors } from "hono/cors";
 import { zValidator } from "@hono/zod-validator";
 import { z } from "zod";
-import { todosTable, usersTable } from "./db/schema";
+import { Todos, Profile } from "./db/schema";
 import { drizzle } from "drizzle-orm/postgres-js";
 import postgres from "postgres";
 import "dotenv/config";
@@ -32,11 +32,11 @@ const userSchema = z.object({
 
 const route = app
   .get("/todos", async (c) => {
-    const client = postgres(process.env.DATABASE_URL as string, {
+    const client = postgres(c.env.DATABASE_URL as string, {
       prepare: false,
     });
     const db = drizzle({ client });
-    const todos = await db.select().from(todosTable);
+    const todos = await db.select().from(Todos);
     if (todos == null) {
       return c.text("'Failed to fetch todos', 500");
     }
@@ -54,30 +54,30 @@ const route = app
       const client = postgres(c.env.DATABASE_URL, { prepare: false });
       const db = drizzle({ client });
       const todo = await db
-        .insert(todosTable)
+        .insert(Todos)
         .values({ title, description, userId })
         .returning();
       return c.json({ todo: todo[0] });
     }
-  )
-  .post(
-    "/signup",
-    zValidator("json", userSchema, (result, c) => {
-      if (!result.success) {
-        return c.text(result.error.issues[0].message, 400);
-      }
-    }),
-    async (c) => {
-      const client = postgres(c.env.DATABASE_URL, { prepare: false });
-      const db = drizzle({ client });
-      const { email, password } = c.req.valid("json");
-      const user = await db
-        .insert(usersTable)
-        .values({ email, password })
-        .returning();
-      return c.json({ user: user[0] });
-    }
   );
+// .post(
+//   "/signup",
+//   zValidator("json", userSchema, (result, c) => {
+//     if (!result.success) {
+//       return c.text(result.error.issues[0].message, 400);
+//     }
+//   }),
+//   async (c) => {
+//     const client = postgres(c.env.DATABASE_URL, { prepare: false });
+//     const db = drizzle({ client });
+//     const { email, password } = c.req.valid("json");
+//     const user = await db
+//       .insert(Profile)
+//       .values({ email, password })
+//       .returning();
+//     return c.json({ user: user[0] });
+//   }
+// );
 export type AppType = typeof route;
 
 export default app;

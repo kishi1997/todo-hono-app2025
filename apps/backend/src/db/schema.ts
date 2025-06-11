@@ -8,12 +8,6 @@ import {
   timestamp,
 } from "drizzle-orm/pg-core";
 import { authUsers } from "drizzle-orm/supabase";
-// Supabase の auth.users を参照するためのスキーマ指定
-// const authSchema = pgSchema("auth");
-
-// export const Users = authSchema.table("users", {
-//   id: uuid("id").primaryKey(),
-// });
 
 // Profile テーブル（auth.users に対する 1:1 マッピング）
 export const Profile = pgTable("profile", {
