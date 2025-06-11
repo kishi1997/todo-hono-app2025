@@ -1,27 +1,25 @@
 "use client";
 import { useActionState } from "react";
-import { supabaseSignin } from "./actions";
-import Link from "next/link";
-// import { redirect } from "next/navigation";
+import { supabaseSignup } from "./actions";
 
 export default function LoginPage() {
-  const signinAction = async (
+  const signupAction = async (
     preverror: string | null,
     formData: FormData
   ): Promise<string | null> => {
     const email = formData.get("email") as string;
     const password = formData.get("password") as string;
-    const res = await supabaseSignin(email, password);
+    const res = await supabaseSignup(email, password);
     if (!res.success) {
-      console.error("signin、失敗", res.message);
+      console.error("signup、失敗", res.message);
       return res.message || "サインインに失敗しました。";
     }
     return null;
   };
-  const [error, submitAction, isPending] = useActionState(signinAction, null);
+  const [error, submitAction, isPending] = useActionState(signupAction, null);
   return (
     <div className="flex flex-col items-center justify-center h-screen">
-      <h1 className="text-3xl font-bold mb-4">Sign in</h1>
+      <h1 className="text-3xl font-bold mb-4">Sign up</h1>
       <form action={submitAction} className="flex flex-col space-y-4 min-w-3xl">
         <label htmlFor="email" className="font-semibold">
           Email:
@@ -52,12 +50,6 @@ export default function LoginPage() {
         </button>
         {error && <p className="text-red-500">{error}</p>}
       </form>
-      <p className="mt-4">
-        if you don&apos;t have an account, please
-        <Link href="/signup" className="text-blue-500 pl-2">
-          Sign up
-        </Link>
-      </p>
     </div>
   );
 }
