@@ -8,7 +8,6 @@ import postgres from "postgres";
 import "dotenv/config";
 import { createSupabaseClientWithToken } from "./utils/supabase/client";
 import { createClient } from "@supabase/supabase-js";
-import { eq } from "drizzle-orm";
 export type Env = {
   DATABASE_URL: string;
   SUPABASE_URL: string;
@@ -102,16 +101,6 @@ const route = app
       const db = drizzle({ client });
       const user = c.get("user");
       const { id, email } = user;
-      // Assuming 'id' from 'user' is the primary key for 'Profile'
-      const existingProfile = await db
-        .select()
-        .from(Profile)
-        .where(eq(Profile.id, id))
-        .limit(1); // Add .limit(1) to optimize if you only expect one result
-
-      if (existingProfile.length > 0) {
-        return c.text("Name is already set for this user.", 400);
-      }
       const { name } = c.req.valid("json");
       const userData = await db
         .insert(Profile)
