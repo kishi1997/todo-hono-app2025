@@ -6,9 +6,13 @@ import { Todos, Profile } from "./db/schema";
 import { drizzle } from "drizzle-orm/postgres-js";
 import postgres from "postgres";
 import "dotenv/config";
-
+import { createSupabaseClientWithToken } from "./utils/supabase/client";
+import { createClient } from "@supabase/supabase-js";
+import { eq } from "drizzle-orm";
 export type Env = {
   DATABASE_URL: string;
+  SUPABASE_URL: string;
+  SUPABASE_ANON_KEY: string;
 };
 
 const app = new Hono<{ Bindings: Env }>();
@@ -16,18 +20,44 @@ const app = new Hono<{ Bindings: Env }>();
 app.use(
   "*",
   cors({
+    allowHeaders: ["Content-Type", "Authorization"],
     origin: "*",
   })
 );
 
+app.use("/profile/*", async (c, next) => {
+  const authHeader = c.req.header("Authorization");
+
+  if (!authHeader || !authHeader.startsWith("Bearer ")) {
+    return c.text("Unauthorized", 401);
+  }
+
+  const token = authHeader.split(" ")[1];
+
+  const supabase = createClient(c.env.SUPABASE_URL, c.env.SUPABASE_ANON_KEY);
+
+  const {
+    data: { user },
+    error,
+  } = await supabase.auth.getUser(token);
+
+  if (error || user == null) {
+    return c.text("Unauthorized", 401);
+  }
+  // コンテキストにuserをセット
+  c.set("user", user);
+
+  await next(); // 次の処理へ
+});
+
 const todoSchema = z.object({
+  id: z.string(),
   title: z.string().min(2),
   description: z.string().nullable(),
-  userId: z.number(),
+  profileId: z.string(),
 });
 const userSchema = z.object({
-  email: z.string().email(),
-  password: z.string().min(6),
+  name: z.string(),
 });
 
 const route = app
@@ -50,34 +80,46 @@ const route = app
       }
     }),
     async (c) => {
-      const { title, description, userId } = c.req.valid("json");
+      const { id, title, description, profileId } = c.req.valid("json");
       const client = postgres(c.env.DATABASE_URL, { prepare: false });
       const db = drizzle({ client });
       const todo = await db
         .insert(Todos)
-        .values({ title, description, userId })
+        .values({ id, title, description, profileId })
         .returning();
       return c.json({ todo: todo[0] });
     }
+  )
+  .post(
+    "/profile",
+    zValidator("json", userSchema, (result, c) => {
+      if (!result.success) {
+        return c.text(result.error.issues[0].message, 400);
+      }
+    }),
+    async (c) => {
+      const client = postgres(c.env.DATABASE_URL, { prepare: false });
+      const db = drizzle({ client });
+      const user = c.get("user");
+      const { id, email } = user;
+      // Assuming 'id' from 'user' is the primary key for 'Profile'
+      const existingProfile = await db
+        .select()
+        .from(Profile)
+        .where(eq(Profile.id, id))
+        .limit(1); // Add .limit(1) to optimize if you only expect one result
+
+      if (existingProfile.length > 0) {
+        return c.text("Name is already set for this user.", 400);
+      }
+      const { name } = c.req.valid("json");
+      const userData = await db
+        .insert(Profile)
+        .values({ id, name, email })
+        .returning();
+      return c.json({ user: userData[0] });
+    }
   );
-// .post(
-//   "/signup",
-//   zValidator("json", userSchema, (result, c) => {
-//     if (!result.success) {
-//       return c.text(result.error.issues[0].message, 400);
-//     }
-//   }),
-//   async (c) => {
-//     const client = postgres(c.env.DATABASE_URL, { prepare: false });
-//     const db = drizzle({ client });
-//     const { email, password } = c.req.valid("json");
-//     const user = await db
-//       .insert(Profile)
-//       .values({ email, password })
-//       .returning();
-//     return c.json({ user: user[0] });
-//   }
-// );
 export type AppType = typeof route;
 
 export default app;
