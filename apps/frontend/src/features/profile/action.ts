@@ -1,0 +1,12 @@
+"use server";
+import { ProfileGetResponse } from "@/types/api";
+import { createAuthorizedClient } from "@/utils/client";
+
+export const getProfile = async (): Promise<ProfileGetResponse> => {
+  const client = await createAuthorizedClient();
+  const response = await client.profile.$get();
+  if (!response.ok) {
+    throw new Error("プロフィールの取得に失敗しました");
+  }
+  return response.json();
+};

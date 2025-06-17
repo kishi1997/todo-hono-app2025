@@ -1,3 +1,4 @@
+"use client";
 import { useCreateTodo } from "@/features/todos/api/use-create-todos";
 import { TodoPostResponse } from "@/types/api";
 import { useActionState } from "react";
