@@ -1,24 +1,34 @@
 "use client";
-import { client } from "@/utils/client";
-import { useQuery } from "@tanstack/react-query";
-
-const getTodos = async () => {
-  const res = await client.todos.$get();
-  const { todos } = await res.json();
-  return todos;
-};
+import { useGetTodos } from "@/features/todos/api/use-get-todos";
 
 export const Todos = () => {
-  const query = useQuery({ queryKey: ["todos"], queryFn: getTodos });
+  const { data, isLoading } = useGetTodos();
+
+  if (isLoading) {
+    return (
+      <div className="w-full mt-72 flex justify-center items-center">
+        loading...
+      </div>
+    );
+  }
+  if (!data) {
+    return (
+      <div className="w-full mt-64 flex justify-center items-center">
+        todoが見つかりません
+      </div>
+    );
+  }
   return (
     <div className="pb-10">
-      {query.data?.map((todo) => (
+      {data.todos.map((todo) => (
         <div
           key={todo.id}
           className="max-w-[600px] mx-auto mt-4 p-4 bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow"
         >
           <h3 className="text-lg font-semibold text-gray-800">{todo.title}</h3>
-          {todo.desc && <p className="mt-2 text-gray-600">{todo.desc}</p>}
+          {todo.description && (
+            <p className="mt-2 text-gray-600">{todo.description}</p>
+          )}
         </div>
       ))}
     </div>
