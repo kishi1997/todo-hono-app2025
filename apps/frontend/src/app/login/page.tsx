@@ -1,7 +1,7 @@
 "use client";
 import { useActionState } from "react";
-import { supabaseSignin } from "./actions";
 import Link from "next/link";
+import { supabaseSignin } from "@/features/supabase/action";
 // import { redirect } from "next/navigation";
 
 export default function LoginPage() {
