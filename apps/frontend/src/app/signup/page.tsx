@@ -1,6 +1,6 @@
 "use client";
+import { supabaseSignup } from "@/features/supabase/action";
 import { useActionState } from "react";
-import { supabaseSignup } from "./actions";
 
 export default function LoginPage() {
   const signupAction = async (
