@@ -116,7 +116,17 @@ const route = app
         .returning();
       return c.json({ user: userData[0] });
     }
-  );
+  )
+  .get("/profile", async (c) => {
+    const client = postgres(c.env.DATABASE_URL, { prepare: false });
+    const db = drizzle({ client });
+    const user = c.get("user");
+    const userData = await db
+      .select()
+      .from(Profile)
+      .where(eq(Profile.id, user.id));
+    return c.json({ user: userData[0] });
+  });
 export type AppType = typeof route;
 
 export default app;

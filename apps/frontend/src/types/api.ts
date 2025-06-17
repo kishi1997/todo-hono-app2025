@@ -11,3 +11,6 @@ export type TodoPostRequest = InferRequestType<
 
 // 例：全Todo取得APIのレスポンスボディの型
 export type TodosGetResponse = InferResponseType<typeof client.todos.$get>;
+
+// profile取得APIのレスポンスボディの型
+export type ProfileGetResponse = InferResponseType<typeof client.profile.$get>;
