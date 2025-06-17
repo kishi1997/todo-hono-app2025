@@ -1,21 +1,63 @@
-import { client } from "@/utils/client";
-import { useQueryClient } from "@tanstack/react-query";
+import { useCreateTodo } from "@/features/todos/api/use-create-todos";
+import { TodoPostResponse } from "@/types/api";
 import { useActionState } from "react";
 
+// フォームが管理する状態の型
+type FormState = {
+  message: string;
+  isSuccess: boolean;
+};
+
+// フォームの初期状態
+const initialState: FormState = {
+  message: "",
+  isSuccess: false,
+};
+const SubmitButton = ({ isPending }: { isPending: boolean }) => {
+  return (
+    <button
+      className="bg-blue-500 text-white p-2 rounded-md"
+      type="submit"
+      disabled={isPending}
+    >
+      {isPending ? "作成中..." : "作成"}
+    </button>
+  );
+};
+
 export const TodoInput = () => {
-  const queryClient = useQueryClient();
-  const formAction = async (prevError: string | null, formData: FormData) => {
+  const { mutate } = useCreateTodo();
+  // ★ TanStack Queryのフックを呼び出す
+  const formAction = async (
+    prevState: FormState,
+    formData: FormData
+  ): Promise<FormState> => {
     const title = formData.get("title") as string;
-    const desc = formData.get("desc") as string;
-    const res = await client.todo.$post({ json: { title, desc } });
-    if (!res.ok) {
-      const error = await res.text();
-      return error;
-    }
-    queryClient.invalidateQueries({ queryKey: ["todos"] });
-    return null;
+    const description = formData.get("desc") as string;
+    return new Promise((resolve) => {
+      mutate(
+        { title, description },
+        {
+          onSuccess: (data: TodoPostResponse) => {
+            // 成功したら、useActionStateに成功状態を返す
+            console.log("作成成功:", data);
+            resolve({ message: "Todoを正常に作成しました！", isSuccess: true });
+          },
+          onError: (err) => {
+            // 失敗したら、useActionStateに失敗状態を返す
+            resolve({
+              message: `作成に失敗しました: ${(err as Error).message}`,
+              isSuccess: false,
+            });
+          },
+        }
+      );
+    });
   };
-  const [error, submitAction, isPending] = useActionState(formAction, null);
+  const [state, submitAction, isPending] = useActionState(
+    formAction,
+    initialState
+  );
 
   return (
     <form
@@ -38,14 +80,14 @@ export const TodoInput = () => {
         name="desc"
         className="border-2 border-gray-300 rounded-md p-2"
       />
-      <button
-        disabled={isPending}
-        type="submit"
-        className="bg-blue-500 text-white p-2 rounded-md"
-      >
-        Submit
-      </button>
-      {error && <p className="text-red-500">{error}</p>}
+      {/* isPendingをボタンに渡して無効化を制御 */}
+      <SubmitButton isPending={isPending} />
+      {/* useActionStateが管理する状態メッセージを表示 */}
+      {state.message && !isPending && (
+        <p style={{ color: state.isSuccess ? "green" : "red" }}>
+          {state.message}
+        </p>
+      )}
     </form>
   );
 };

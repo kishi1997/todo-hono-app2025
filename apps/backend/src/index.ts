@@ -6,15 +6,19 @@ import { Todos, Profile } from "./db/schema";
 import { drizzle } from "drizzle-orm/postgres-js";
 import postgres from "postgres";
 import "dotenv/config";
-import { createSupabaseClientWithToken } from "./utils/supabase/client";
 import { createClient } from "@supabase/supabase-js";
+import { eq } from "drizzle-orm";
+import type { User as AuthUser } from "@supabase/supabase-js";
+
 export type Env = {
   DATABASE_URL: string;
   SUPABASE_URL: string;
   SUPABASE_ANON_KEY: string;
 };
-
-const app = new Hono<{ Bindings: Env }>();
+type Variables = {
+  user: AuthUser;
+};
+const app = new Hono<{ Bindings: Env; Variables: Variables }>();
 
 app.use(
   "*",
@@ -24,7 +28,7 @@ app.use(
   })
 );
 
-app.use("/profile/*", async (c, next) => {
+app.use("*", async (c, next) => {
   const authHeader = c.req.header("Authorization");
 
   if (!authHeader || !authHeader.startsWith("Bearer ")) {
@@ -53,7 +57,6 @@ const todoSchema = z.object({
   id: z.string(),
   title: z.string().min(2),
   description: z.string().nullable(),
-  profileId: z.string(),
 });
 const userSchema = z.object({
   name: z.string(),
@@ -65,26 +68,28 @@ const route = app
       prepare: false,
     });
     const db = drizzle({ client });
-    const todos = await db.select().from(Todos);
-    if (todos == null) {
-      return c.text("'Failed to fetch todos', 500");
-    }
+    const user = c.get("user");
+    const todos = await db
+      .select()
+      .from(Todos)
+      .where(eq(Todos.profileId, user.id));
     return c.json({ todos });
   })
   .post(
-    "/todo",
+    "/todos",
     zValidator("json", todoSchema, (result, c) => {
       if (!result.success) {
         return c.text(result.error.issues[0].message, 400);
       }
     }),
     async (c) => {
-      const { id, title, description, profileId } = c.req.valid("json");
+      const user = c.get("user");
+      const { id, title, description } = c.req.valid("json");
       const client = postgres(c.env.DATABASE_URL, { prepare: false });
       const db = drizzle({ client });
       const todo = await db
         .insert(Todos)
-        .values({ id, title, description, profileId })
+        .values({ id, title, description, profileId: user.id })
         .returning();
       return c.json({ todo: todo[0] });
     }
@@ -101,6 +106,9 @@ const route = app
       const db = drizzle({ client });
       const user = c.get("user");
       const { id, email } = user;
+      if (id == null || email == null) {
+        return c.text("Unauthorized", 401);
+      }
       const { name } = c.req.valid("json");
       const userData = await db
         .insert(Profile)

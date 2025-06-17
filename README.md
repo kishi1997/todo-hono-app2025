@@ -76,8 +76,16 @@ bunx drizzle-kit migrate
 ```
 
 5.  **開発サーバーを起動します:**
+
     ```bash
     cd apps/backend && bun run dev
     cd apps/frontend && bun run dev
     ```
+
     アプリケーションは `http://localhost:3000` で利用可能になります。
+
+6.  **Cloudflare Pages へのデプロイ**
+
+    ```bash
+    bun install && bun run build"
+    ```

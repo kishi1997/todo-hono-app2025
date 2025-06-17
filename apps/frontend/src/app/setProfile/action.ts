@@ -1,16 +1,9 @@
 "use server";
-import { getHonoClient } from "@/utils/client";
-import { getToken } from "@/utils/utils";
+import { createAuthorizedClient } from "@/utils/client";
 import { redirect } from "next/navigation";
 
 export const setUserName = async (name: string) => {
-  const token = await getToken();
-  if (token == null)
-    return {
-      success: false,
-      message: "ログインしてください",
-    };
-  const client = getHonoClient(token);
+  const client = await createAuthorizedClient();
   const res = await client.profile.$post({
     json: { name },
   });
