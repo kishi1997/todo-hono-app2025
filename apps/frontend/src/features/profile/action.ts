@@ -10,3 +10,13 @@ export const getProfile = async (): Promise<ProfileGetResponse> => {
   }
   return response.json();
 };
+
+export const setProfile = async (name: string): Promise<void> => {
+  const client = await createAuthorizedClient();
+  const response = await client.profile.$post({
+    json: { name },
+  });
+  if (!response.ok) {
+    throw new Error("プロフィールの取得に失敗しました");
+  }
+};
