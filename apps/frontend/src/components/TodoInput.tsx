@@ -65,13 +65,13 @@ export const TodoInput = () => {
       <Input
         type="text"
         name="title"
-        placeholder="新しいタスクを追加..."
+        placeholder="新しいタスクを追加しよう！"
         value={title}
         onChange={(e) => setTitle(e.target.value)}
         disabled={isPending}
         required
         className="flex-grow rounded-lg border-none bg-white/10 px-4 py-2 text-white 
-        backdrop-blur-sm placeholder:text-gray-300 focus-visible:shadow-none focus-visible:outline-none focus-visible:border-none focus-visible:ring-0"
+        backdrop-blur-sm placeholder:text-xs placeholder:text-gray-400 focus-visible:shadow-none focus-visible:outline-none focus-visible:border-none focus-visible:ring-0"
       />
       <Button
         className="hover:cursor-pointer hover:filter hover:brightness-75"

@@ -4,12 +4,12 @@ import { Todos } from "@/components/Todos";
 
 export default function Home() {
   return (
-    <div className="bg-gradient-to-br from-gray-900 via-gray-800 to-black text-white min-h-screen">
+    <div className="p-4 w-full">
       <Header />
-      <main className="container max-w-2xl mx-auto mt-8 px-4">
+      <main className="p-4 w-full max-w-lg mx-auto">
         <div className="space-y-6">
-          <h1 className="text-3xl font-bold tracking-tight text-center">
-            Todo App
+          <h1 className="border-muted/50 scroll-m-20 border-b pb-2 mb-8 text-3xl font-semibold tracking-tight first:mt-0">
+            TODO APP
           </h1>
           <TodoInput />
           <Todos />
