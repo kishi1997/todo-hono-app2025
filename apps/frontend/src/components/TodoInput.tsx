@@ -1,94 +1,85 @@
 "use client";
-import { useCreateTodo } from "@/features/todos/api/use-create-todos";
-import { TodoPostResponse } from "@/types/api";
-import { useActionState } from "react";
 
-// フォームが管理する状態の型
+import { useActionState, useState, useRef } from "react";
+import { useCreateTodo } from "@/features/todos/api/use-create-todos";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { toast } from "sonner"; // shadcn/uiのToasterを使うとより良い体験になります
+
 type FormState = {
   message: string;
   isSuccess: boolean;
 };
 
-// フォームの初期状態
 const initialState: FormState = {
   message: "",
   isSuccess: false,
 };
-const SubmitButton = ({ isPending }: { isPending: boolean }) => {
-  return (
-    <button
-      className="bg-blue-500 text-white p-2 rounded-md"
-      type="submit"
-      disabled={isPending}
-    >
-      {isPending ? "作成中..." : "作成"}
-    </button>
-  );
-};
 
 export const TodoInput = () => {
   const { mutate } = useCreateTodo();
-  // ★ TanStack Queryのフックを呼び出す
+  const [title, setTitle] = useState("");
+  const formRef = useRef<HTMLFormElement>(null);
+
   const formAction = async (
     prevState: FormState,
     formData: FormData
   ): Promise<FormState> => {
     const title = formData.get("title") as string;
-    const description = formData.get("desc") as string;
+    if (!title) {
+      return { message: "タイトルは必須です。", isSuccess: false };
+    }
+
     return new Promise((resolve) => {
       mutate(
-        { title, description },
+        // Descriptionは不要なので空文字やnullを渡す
+        { title, description: "" },
         {
-          onSuccess: (data: TodoPostResponse) => {
-            // 成功したら、useActionStateに成功状態を返す
-            console.log("作成成功:", data);
-            resolve({ message: "Todoを正常に作成しました！", isSuccess: true });
+          onSuccess: () => {
+            // 成功時にフォームをリセット
+            formRef.current?.reset();
+            setTitle("");
+            toast.success("Todoを追加しました！");
+            resolve({ message: "成功", isSuccess: true });
           },
           onError: (err) => {
-            // 失敗したら、useActionStateに失敗状態を返す
-            resolve({
-              message: `作成に失敗しました: ${(err as Error).message}`,
-              isSuccess: false,
-            });
+            const errorMessage = `追加に失敗しました: ${
+              (err as Error).message
+            }`;
+            toast.error(errorMessage);
+            resolve({ message: errorMessage, isSuccess: false });
           },
         }
       );
     });
   };
-  const [state, submitAction, isPending] = useActionState(
-    formAction,
-    initialState
-  );
+
+  const [, submitAction, isPending] = useActionState(formAction, initialState);
 
   return (
     <form
+      ref={formRef}
       action={submitAction}
-      className="flex flex-col gap-2 max-w-[600px] mx-auto mt-10"
+      className="flex w-full items-center space-x-2"
     >
-      <label htmlFor="title" className="text-sm font-medium">
-        Title
-      </label>
-      <input
+      <Input
         type="text"
         name="title"
-        className="border-2 border-gray-300 rounded-md p-2"
+        placeholder="新しいタスクを追加..."
+        value={title}
+        onChange={(e) => setTitle(e.target.value)}
+        disabled={isPending}
+        required
+        className="flex-grow rounded-lg border-none bg-white/10 px-4 py-2 text-white 
+        backdrop-blur-sm placeholder:text-gray-300 focus-visible:shadow-none focus-visible:outline-none focus-visible:border-none focus-visible:ring-0"
       />
-      <label htmlFor="desc" className="text-sm font-medium">
-        Description
-      </label>
-      <input
-        type="text"
-        name="desc"
-        className="border-2 border-gray-300 rounded-md p-2"
-      />
-      {/* isPendingをボタンに渡して無効化を制御 */}
-      <SubmitButton isPending={isPending} />
-      {/* useActionStateが管理する状態メッセージを表示 */}
-      {state.message && !isPending && (
-        <p style={{ color: state.isSuccess ? "green" : "red" }}>
-          {state.message}
-        </p>
-      )}
+      <Button
+        className="hover:cursor-pointer hover:filter hover:brightness-75"
+        type="submit"
+        disabled={isPending || title.length === 0}
+      >
+        {isPending ? "追加中..." : "追加"}
+      </Button>
     </form>
   );
 };

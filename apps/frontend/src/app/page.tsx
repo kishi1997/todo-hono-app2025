@@ -1,21 +1,20 @@
-"use client";
 import { Header } from "@/components/Header";
 import { TodoInput } from "@/components/TodoInput";
 import { Todos } from "@/components/Todos";
-import { supabaseSignout } from "@/features/supabase/action";
 
 export default function Home() {
   return (
-    <div>
-      <Header></Header>
-      <button
-        className="bg-blue-500 text-white p-2 rounded-md m-auto"
-        onClick={() => supabaseSignout()}
-      >
-        logout
-      </button>
-      <TodoInput></TodoInput>
-      <Todos></Todos>
+    <div className="bg-gradient-to-br from-gray-900 via-gray-800 to-black text-white min-h-screen">
+      <Header />
+      <main className="container max-w-2xl mx-auto mt-8 px-4">
+        <div className="space-y-6">
+          <h1 className="text-3xl font-bold tracking-tight text-center">
+            Todo App
+          </h1>
+          <TodoInput />
+          <Todos />
+        </div>
+      </main>
     </div>
   );
 }
