@@ -12,7 +12,7 @@ export const supabaseSignup = async (email: string, password: string) => {
     // エラーメッセージを返す
     return {
       success: false,
-      message: error.message || "サインインに失敗しました。",
+      message: error.message || "サインアップに失敗しました。",
     };
   }
   redirect("/setProfile");
