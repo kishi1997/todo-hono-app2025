@@ -24,7 +24,7 @@ export const createTodo = async (
     json: newTodo,
   });
   if (!response.ok) {
-    throw new Error("記事の取得に失敗しました");
+    throw new Error("Todoの追加に失敗しました");
   }
   return response.json();
 };

@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Trash2 } from "lucide-react";
 import { TodoPostResponse } from "@/types/api";
-// import { toast } from "sonner";
+import { StatusBadge } from "./custom/StatusBadge";
 
 // ※これらのAPIフックは、別途作成する必要があります
 // import { useUpdateTodo } from "@/features/todos/api/use-update-todo";
@@ -68,6 +68,7 @@ export const TodoItem = ({ todo }: TodoPostResponse) => {
       >
         {todo.title}
       </label>
+      <StatusBadge status={todo.status} />
       <Button
         variant="ghost"
         size="icon"

@@ -57,7 +57,9 @@ const todoSchema = z.object({
   id: z.string(),
   title: z.string().min(2),
   description: z.string().nullable(),
+  status: z.enum(["NOT_STARTED", "IN_PROGRESS", "DONE"]).default("NOT_STARTED"),
 });
+
 const userSchema = z.object({
   name: z.string(),
 });
@@ -84,12 +86,31 @@ const route = app
     }),
     async (c) => {
       const user = c.get("user");
-      const { id, title, description } = c.req.valid("json");
+      const { id, title, description, status } = c.req.valid("json");
       const client = postgres(c.env.DATABASE_URL, { prepare: false });
       const db = drizzle({ client });
       const todo = await db
         .insert(Todos)
-        .values({ id, title, description, profileId: user.id })
+        .values({ id, title, description, profileId: user.id, status })
+        .returning();
+      return c.json({ todo: todo[0] });
+    }
+  )
+  .patch(
+    "/todos",
+    zValidator("json", todoSchema, (result, c) => {
+      if (!result.success) {
+        return c.text(result.error.issues[0].message, 400);
+      }
+    }),
+    async (c) => {
+      const { id, title, description, status } = c.req.valid("json");
+      const client = postgres(c.env.DATABASE_URL, { prepare: false });
+      const db = drizzle({ client });
+      const todo = await db
+        .update(Todos)
+        .set({ title, description, status })
+        .where(eq(Todos.id, id))
         .returning();
       return c.json({ todo: todo[0] });
     }
