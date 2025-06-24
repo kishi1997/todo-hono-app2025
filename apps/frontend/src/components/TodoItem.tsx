@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Trash2 } from "lucide-react";
 import { TodoPostResponse } from "@/types/api";
-// import { toast } from "sonner";
+import { StatusBadge } from "./custom/StatusBadge";
 
 // ※これらのAPIフックは、別途作成する必要があります
 // import { useUpdateTodo } from "@/features/todos/api/use-update-todo";
@@ -39,7 +39,7 @@ export const TodoItem = ({ todo }: TodoPostResponse) => {
     <div
       className={cn(
         // --- ベーススタイル ---
-        "hover:cursor-pointer hover:bg-muted/10 flex items-center p-4 border-t-1 border-muted/50 transition-all duration-200 mb-0 last:border-b-1"
+        "hover:cursor-pointer hover:bg-muted/10 flex items-center py-4 pl-4 border-t-1 border-muted/50 transition-all duration-200 mb-0 last:border-b-1"
         // --- 状態に応じたスタイル ---
         // 完了時のスタイル
         //   todo.isCompleted
@@ -68,6 +68,7 @@ export const TodoItem = ({ todo }: TodoPostResponse) => {
       >
         {todo.title}
       </label>
+      <StatusBadge status={todo.status} />
       <Button
         variant="ghost"
         size="icon"

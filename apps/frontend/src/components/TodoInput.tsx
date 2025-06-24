@@ -4,7 +4,7 @@ import { useActionState, useState, useRef } from "react";
 import { useCreateTodo } from "@/features/todos/api/use-create-todos";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { toast } from "sonner"; // shadcn/uiのToasterを使うとより良い体験になります
+import { toast } from "sonner";
 
 type FormState = {
   message: string;
@@ -43,9 +43,7 @@ export const TodoInput = () => {
             resolve({ message: "成功", isSuccess: true });
           },
           onError: (err) => {
-            const errorMessage = `追加に失敗しました: ${
-              (err as Error).message
-            }`;
+            const errorMessage = `${(err as Error).message}`;
             toast.error(errorMessage);
             resolve({ message: errorMessage, isSuccess: false });
           },
