@@ -39,7 +39,7 @@ export const TodoItem = ({ todo }: TodoPostResponse) => {
     <div
       className={cn(
         // --- ベーススタイル ---
-        "hover:cursor-pointer hover:bg-muted/10 flex items-center p-4 border-t-1 border-muted/50 transition-all duration-200 mb-0 last:border-b-1"
+        "hover:cursor-pointer hover:bg-muted/10 flex items-center py-4 pl-4 border-t-1 border-muted/50 transition-all duration-200 mb-0 last:border-b-1"
         // --- 状態に応じたスタイル ---
         // 完了時のスタイル
         //   todo.isCompleted

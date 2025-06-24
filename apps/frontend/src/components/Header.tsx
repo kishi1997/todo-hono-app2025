@@ -37,7 +37,7 @@ export const Header = () => {
     );
   }
   return (
-    <div className="flex justify-between items-center p-4 w-full">
+    <header className="flex justify-between items-center p-4 w-full fixed top-0 left-0">
       <Avatar>
         <AvatarImage src="https://github.com/shadcn.png" alt={data.user.name} />
         <AvatarFallback>CN</AvatarFallback>
@@ -48,6 +48,6 @@ export const Header = () => {
       >
         Sign out
       </Button>
-    </div>
+    </header>
   );
 };
