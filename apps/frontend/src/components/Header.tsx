@@ -31,9 +31,21 @@ export const Header = () => {
   }
   if (!data) {
     return (
-      <div className="flex justify-between items-center p-4 w-full">
-        dataが見つかりません
-      </div>
+      <header className="flex justify-between items-center p-4 w-full fixed top-0 left-0">
+        <Avatar>
+          <AvatarImage
+            src="https://github.com/shadcn.png"
+            alt="サンプルアイコン"
+          />
+          <AvatarFallback>CN</AvatarFallback>
+        </Avatar>
+        <Button
+          className="bg-white/20 text-gray-400 hover:cursor-pointer hover:bg-white/30 hover:text-white"
+          onClick={() => signout()}
+        >
+          Sign out
+        </Button>
+      </header>
     );
   }
   return (

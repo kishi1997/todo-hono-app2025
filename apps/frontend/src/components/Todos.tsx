@@ -20,7 +20,7 @@ export const Todos = () => {
 
   if (error) {
     return (
-      <div className="mt-10 text-center text-destructive">
+      <div className="mt-10 text-center text-muted-foreground">
         エラー: タスクの読み込みに失敗しました。
       </div>
     );

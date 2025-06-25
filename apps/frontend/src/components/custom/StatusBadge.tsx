@@ -1,5 +1,16 @@
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
+import {
+  DropdownMenu,
+  DropdownMenuTrigger,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+} from "@/components/ui/dropdown-menu";
+import { useUpdateTodo } from "@/features/todos/api/use-update-todos";
+import { Todo } from "@/types/api";
+import { toast } from "sonner";
 
 // ステータスの文字列リテラル型
 type TodoStatus = "NOT_STARTED" | "IN_PROGRESS" | "DONE";
@@ -34,29 +45,75 @@ const statusConfig: Record<
 };
 
 // コンポーネントのPropsの型定義
+// Props
 interface StatusBadgeProps {
+  todo: Todo;
   status: TodoStatus;
   className?: string;
 }
 
-export const StatusBadge = ({ status, className }: StatusBadgeProps) => {
+export const StatusBadge = ({ todo, status, className }: StatusBadgeProps) => {
+  const { mutate } = useUpdateTodo();
   const config = statusConfig[status];
 
   // 不正なステータスが渡された場合は何も表示しない
   if (!config) {
     return null;
   }
-
+  const otherStatuses = (Object.keys(statusConfig) as TodoStatus[]).filter(
+    (s) => s !== status
+  );
+  const changeStatus = (newStatus: TodoStatus) => {
+    mutate(
+      {
+        id: todo.id,
+        title: todo.title,
+        description: todo.description,
+        status: newStatus,
+      },
+      {
+        onSuccess: () => {
+          toast.success("ステータスを更新しました！");
+        },
+        onError: (err) => {
+          const errorMessage = `${(err as Error).message}`;
+          toast.error(errorMessage);
+        },
+      }
+    );
+  };
   return (
-    <Badge
-      className={cn(
-        "flex items-center gap-2 px-3 py-1.5 text-sm font-medium capitalize",
-        config.badgeClass,
-        className
-      )}
-    >
-      <span className={cn("h-2.5 w-2.5 rounded-full", config.dotClass)} />
-      <span>{config.label}</span>
-    </Badge>
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <Badge
+          className={cn(
+            "flex items-center gap-2 px-3 py-1.5 text-sm font-medium capitalize cursor-pointer",
+            config.badgeClass,
+            className
+          )}
+        >
+          <span className={cn("h-2.5 w-2.5 rounded-full", config.dotClass)} />
+          <span>{config.label}</span>
+        </Badge>
+      </DropdownMenuTrigger>
+
+      <DropdownMenuContent className="w-56 min-w-[160px]">
+        <DropdownMenuLabel>Status</DropdownMenuLabel>
+        <DropdownMenuSeparator />
+        {otherStatuses.map((s) => {
+          const c = statusConfig[s];
+          return (
+            <DropdownMenuItem
+              key={s}
+              onClick={() => changeStatus(s)}
+              className="cursor-pointer flex items-center gap-2"
+            >
+              <span className={cn("h-2.5 w-2.5 rounded-full", c.dotClass)} />
+              <span>{c.label}</span>
+            </DropdownMenuItem>
+          );
+        })}
+      </DropdownMenuContent>
+    </DropdownMenu>
   );
 };
