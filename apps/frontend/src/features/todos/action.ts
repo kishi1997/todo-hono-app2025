@@ -3,6 +3,8 @@ import {
   TodoPostRequest,
   TodoPostResponse,
   TodosGetResponse,
+  TodosPatchRequest,
+  TodosPatchResponse,
 } from "@/types/api";
 import { createAuthorizedClient } from "@/utils/client";
 
@@ -11,7 +13,7 @@ export const getTodoList = async (): Promise<TodosGetResponse> => {
   const client = await createAuthorizedClient();
   const response = await client.todos.$get();
   if (!response.ok) {
-    throw new Error("記事の取得に失敗しました");
+    throw new Error("Todoの取得に失敗しました");
   }
   return response.json();
 };
@@ -25,6 +27,17 @@ export const createTodo = async (
   });
   if (!response.ok) {
     throw new Error("Todoの追加に失敗しました");
+  }
+  return response.json();
+};
+// Todo編集
+export const updateTodo = async (
+  todo: TodosPatchRequest
+): Promise<TodosPatchResponse> => {
+  const client = await createAuthorizedClient();
+  const response = await client.todos.$patch(todo);
+  if (!response.ok) {
+    throw new Error("Todoの更新に失敗しました");
   }
   return response.json();
 };
