@@ -11,10 +11,15 @@ import {
 import { useUpdateTodo } from "@/features/todos/api/use-update-todos";
 import { Todo } from "@/types/api";
 import { toast } from "sonner";
+import { useState } from "react";
 
 // ステータスの文字列リテラル型
 type TodoStatus = "NOT_STARTED" | "IN_PROGRESS" | "DONE";
-
+type Config = {
+  label: string;
+  badgeClass: string;
+  dotClass: string;
+};
 // ステータスごとの設定を定義するオブジェクト
 const statusConfig: Record<
   TodoStatus,
@@ -48,14 +53,17 @@ const statusConfig: Record<
 // Props
 interface StatusBadgeProps {
   todo: Todo;
-  status: TodoStatus;
+  currentStatus: TodoStatus;
   className?: string;
 }
 
-export const StatusBadge = ({ todo, status, className }: StatusBadgeProps) => {
+export const StatusBadge = ({
+  todo,
+  currentStatus,
+  className,
+}: StatusBadgeProps) => {
   const { mutate } = useUpdateTodo();
-  const config = statusConfig[status];
-
+  const [config, setConfig] = useState<Config>(statusConfig[currentStatus]);
   // 不正なステータスが渡された場合は何も表示しない
   if (!config) {
     return null;
@@ -64,6 +72,7 @@ export const StatusBadge = ({ todo, status, className }: StatusBadgeProps) => {
     (s) => s !== status
   );
   const changeStatus = (newStatus: TodoStatus) => {
+    setConfig(statusConfig[newStatus]);
     mutate(
       {
         id: todo.id,
