@@ -1,7 +1,7 @@
 "use client";
 
 import { cn } from "@/lib/utils";
-import { Button } from "@/components/ui/button";
+// import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Trash2 } from "lucide-react";
 import { TodoPostResponse } from "@/types/api";
@@ -9,14 +9,26 @@ import { StatusBadge } from "./custom/StatusBadge";
 import { useState } from "react";
 import { useUpdateTodo } from "@/features/todos/api/use-update-todos";
 import { toast } from "sonner";
+import { useDeleteTodo } from "@/features/todos/api/use-delete-todos";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 
 export const TodoItem = ({ todo }: TodoPostResponse) => {
-  const { mutate } = useUpdateTodo();
+  const { mutate: updateMutate } = useUpdateTodo();
+  const { mutate: deleteMutate } = useDeleteTodo();
   const [todoTitle, setTodoTitle] = useState<string>(todo.title);
   const [focusedTitle, setFocusedTitle] = useState<string>("");
   const updateTitle = (currentTitle: string) => {
     if (currentTitle == focusedTitle) return;
-    mutate(
+    updateMutate(
       {
         id: todo.id,
         title: todoTitle,
@@ -32,33 +44,26 @@ export const TodoItem = ({ todo }: TodoPostResponse) => {
       }
     );
   };
-  // --- 以下はAPIフックが存在すると仮定した実装です ---
-  // const updateMutation = useUpdateTodo(todo.id);
-  // const deleteMutation = useDeleteTodo(todo.id);
-
-  // const handleToggle = (checked: boolean) => {
-  //   updateMutation.mutate(
-  //     { isCompleted: checked },
-  //     { onSuccess: () => toast.success("タスクを更新しました") }
-  //   );
-  // };
-
-  // const handleDelete = () => {
-  //   if (confirm("本当にこのタスクを削除しますか？")) {
-  //     deleteMutation.mutate(undefined, {
-  //       onSuccess: () => toast.success("タスクを削除しました"),
-  //     });
-  //   }
-  // };
-  // --- ここまでAPI連携の仮実装 ---
-  // isPendingを追加して、更新・削除処理中の状態を管理
-  // const isPending = updateMutation.isPending || deleteMutation.isPending;
+  const deleteTodo = () => {
+    deleteMutate(
+      { id: todo.id },
+      {
+        onSuccess: () => {
+          toast.success("タスクを削除しました！");
+        },
+        onError: (err) => {
+          const errorMessage = `${(err as Error).message}`;
+          toast.error(errorMessage);
+        },
+      }
+    );
+  };
 
   return (
     <div
       className={cn(
         // --- ベーススタイル ---
-        "hover:cursor-pointer hover:bg-muted/10 flex items-center py-4 pl-4 border-t-1 border-muted/50 transition-all duration-200 mb-0 last:border-b-1"
+        "hover:cursor-pointer hover:bg-muted/10 flex items-center p-4 border-t-1 border-muted/50 transition-all duration-200 mb-0 last:border-b-1"
         // --- 状態に応じたスタイル ---
         // 完了時のスタイル
         //   todo.isCompleted
@@ -89,15 +94,33 @@ export const TodoItem = ({ todo }: TodoPostResponse) => {
         )}
       />
       <StatusBadge currentStatus={todo.status} todo={todo} />
-      <Button
-        variant="ghost"
-        size="icon"
-        //   onClick={handleDelete}
-        //   disabled={isPending}
-        className="h-8 w-8 text-muted-foreground shrink-0 hover:bg-destructive/10 hover:text-destructive"
-      >
-        <Trash2 className="h-4 w-4" />
-      </Button>
+      <AlertDialog>
+        <AlertDialogTrigger className="ml-4 text-muted-foreground hover:bg-destructive/10 hover:text-destructive hover:cursor-pointer">
+          {/* <Button
+            variant="ghost"
+            size="icon"
+            className="h-8 w-8 text-muted-foreground shrink-0 hover:bg-destructive/10 hover:text-destructive"
+          >
+          </Button> */}
+          <Trash2 className="h-4 w-4" />
+        </AlertDialogTrigger>
+        <AlertDialogContent className="bg-black">
+          <AlertDialogHeader>
+            <AlertDialogTitle>Do you really want to delete?</AlertDialogTitle>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel className="text-black hover:cursor-pointer">
+              Cancel
+            </AlertDialogCancel>
+            <AlertDialogAction
+              className=" hover:cursor-pointer"
+              onClick={deleteTodo}
+            >
+              Yes
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };
