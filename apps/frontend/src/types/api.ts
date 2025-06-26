@@ -22,6 +22,11 @@ export type TodosGetResponse = InferResponseType<typeof client.todos.$get>;
 // 例：Todo更新APIの型
 export type TodosPatchRequest = InferRequestType<typeof client.todos.$patch>;
 export type TodosPatchResponse = InferResponseType<typeof client.todos.$patch>;
+// 例：Todo削除APIの型
+export type TodosDeleteRequest = InferRequestType<typeof client.todos.$delete>;
+export type TodosDeleteResponse = InferResponseType<
+  typeof client.todos.$delete
+>;
 
 // profile取得APIのレスポンスボディの型
 export type ProfileGetResponse = InferResponseType<typeof client.profile.$get>;

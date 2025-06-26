@@ -2,6 +2,8 @@
 import {
   TodoPostRequest,
   TodoPostResponse,
+  TodosDeleteRequest,
+  TodosDeleteResponse,
   TodosGetResponse,
   TodosPatchRequest,
   TodosPatchResponse,
@@ -38,6 +40,17 @@ export const updateTodo = async (
   const response = await client.todos.$patch(todo);
   if (!response.ok) {
     throw new Error("Todoの更新に失敗しました");
+  }
+  return response.json();
+};
+// Todo削除
+export const deleteTodo = async (
+  id: TodosDeleteRequest
+): Promise<TodosDeleteResponse> => {
+  const client = await createAuthorizedClient();
+  const response = await client.todos.$delete(id);
+  if (!response.ok) {
+    throw new Error("Todoの削除に失敗しました");
   }
   return response.json();
 };
