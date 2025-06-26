@@ -168,7 +168,22 @@ const route = app
       .from(Profile)
       .where(eq(Profile.id, user.id));
     return c.json({ user: userData[0] });
-  });
+  })
+  .delete(
+    "/todos",
+    zValidator("json", z.object({ id: z.string() }), (result, c) => {
+      if (!result.success) {
+        return c.text(result.error.issues[0].message, 400);
+      }
+    }),
+    async (c) => {
+      const { id } = c.req.valid("json");
+      const client = postgres(c.env.DATABASE_URL, { prepare: false });
+      const db = drizzle({ client });
+      const todo = await db.delete(Todos).where(eq(Todos.id, id)).returning();
+      return c.json({ todo: todo[0] });
+    }
+  );
 export type AppType = typeof route;
 
 export default app;
