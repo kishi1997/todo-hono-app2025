@@ -1,4 +1,4 @@
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation } from "@tanstack/react-query";
 import { updateTodo } from "../action";
 import { TodosPatchResponse } from "@/types/api";
 
@@ -10,16 +10,11 @@ type UpdateTodoVariables = {
 };
 
 export const useUpdateTodo = () => {
-  const queryClient = useQueryClient();
-
   return useMutation<TodosPatchResponse, Error, UpdateTodoVariables>({
     mutationFn: async (variables: UpdateTodoVariables) => {
       const newTodoData = { json: { ...variables } };
       const response = await updateTodo(newTodoData);
       return response;
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["todos"] });
     },
   });
 };

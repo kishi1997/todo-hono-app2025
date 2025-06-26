@@ -68,7 +68,7 @@ export const TodoItem = ({ todo }: TodoPostResponse) => {
       >
         {todo.title}
       </label>
-      <StatusBadge status={todo.status} todo={todo} />
+      <StatusBadge currentStatus={todo.status} todo={todo} />
       <Button
         variant="ghost"
         size="icon"
