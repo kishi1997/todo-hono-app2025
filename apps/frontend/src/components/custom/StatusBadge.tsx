@@ -68,16 +68,16 @@ export const StatusBadge = ({
   if (!config) {
     return null;
   }
-  const otherStatuses = (Object.keys(statusConfig) as TodoStatus[]).filter(
-    (s) => s !== status
-  );
   const changeStatus = (newStatus: TodoStatus) => {
+    // 同じステータスを選択していたら返却
+    if (newStatus === currentStatus) {
+      return;
+    }
+    // 新しいステータスをセット
     setConfig(statusConfig[newStatus]);
     mutate(
       {
         id: todo.id,
-        title: todo.title,
-        description: todo.description,
         status: newStatus,
       },
       {
@@ -106,19 +106,19 @@ export const StatusBadge = ({
         </Badge>
       </DropdownMenuTrigger>
 
-      <DropdownMenuContent className="w-56 min-w-[160px]">
-        <DropdownMenuLabel>Status</DropdownMenuLabel>
+      <DropdownMenuContent className="w-56 min-w-[160px] bg-gray-900 border-none">
+        <DropdownMenuLabel className="text-white">Status</DropdownMenuLabel>
         <DropdownMenuSeparator />
-        {otherStatuses.map((s) => {
+        {(Object.keys(statusConfig) as TodoStatus[]).map((s) => {
           const c = statusConfig[s];
           return (
             <DropdownMenuItem
               key={s}
               onClick={() => changeStatus(s)}
-              className="cursor-pointer flex items-center gap-2"
+              className="cursor-pointer flex items-center gap-2 focus:bg-white/10"
             >
               <span className={cn("h-2.5 w-2.5 rounded-full", c.dotClass)} />
-              <span>{c.label}</span>
+              <span className="text-white">{c.label}</span>
             </DropdownMenuItem>
           );
         })}

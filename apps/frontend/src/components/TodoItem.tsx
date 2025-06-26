@@ -1,18 +1,37 @@
 "use client";
 
-// import { Todo } from "@/types/api"; // あなたのプロジェクトの型定義に合わせてください
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Trash2 } from "lucide-react";
 import { TodoPostResponse } from "@/types/api";
 import { StatusBadge } from "./custom/StatusBadge";
-
-// ※これらのAPIフックは、別途作成する必要があります
-// import { useUpdateTodo } from "@/features/todos/api/use-update-todo";
-// import { useDeleteTodo } from "@/features/todos/api/use-delete-todo";
+import { useState } from "react";
+import { useUpdateTodo } from "@/features/todos/api/use-update-todos";
+import { toast } from "sonner";
 
 export const TodoItem = ({ todo }: TodoPostResponse) => {
+  const { mutate } = useUpdateTodo();
+  const [todoTitle, setTodoTitle] = useState<string>(todo.title);
+  const [focusedTitle, setFocusedTitle] = useState<string>("");
+  const updateTitle = (currentTitle: string) => {
+    if (currentTitle == focusedTitle) return;
+    mutate(
+      {
+        id: todo.id,
+        title: todoTitle,
+      },
+      {
+        onSuccess: () => {
+          toast.success("タスクを更新しました！");
+        },
+        onError: (err) => {
+          const errorMessage = `${(err as Error).message}`;
+          toast.error(errorMessage);
+        },
+      }
+    );
+  };
   // --- 以下はAPIフックが存在すると仮定した実装です ---
   // const updateMutation = useUpdateTodo(todo.id);
   // const deleteMutation = useDeleteTodo(todo.id);
@@ -56,18 +75,19 @@ export const TodoItem = ({ todo }: TodoPostResponse) => {
         //   disabled={isPending}
         className="mr-4"
       />
-      <label
-        htmlFor={`todo-${todo.id}`}
+      <input
+        value={todoTitle}
+        onChange={(e) => setTodoTitle(e.target.value)}
+        onBlur={(e) => updateTitle(e.target.value)}
+        onFocus={(e) => setFocusedTitle(e.target.value)}
         className={cn(
-          "flex-grow font-medium transition-colors"
+          "flex-grow font-medium transition-colors focus:border-none focus-visible:outline-none hover:cursor-pointer"
           // isPendingではない場合のみ、カーソルをポインターにする
           // !isPending && "cursor-pointer",
           // // 完了時のスタイル
           // todo.isCompleted && "line-through text-muted-foreground"
         )}
-      >
-        {todo.title}
-      </label>
+      />
       <StatusBadge currentStatus={todo.status} todo={todo} />
       <Button
         variant="ghost"

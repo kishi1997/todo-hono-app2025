@@ -52,12 +52,27 @@ app.use("*", async (c, next) => {
 
   await next(); // 次の処理へ
 });
-
+// 更新データの型を定義
+type UpdateTodoData = {
+  title?: string;
+  description?: string | null;
+  status?: "NOT_STARTED" | "IN_PROGRESS" | "DONE";
+};
 const todoSchema = z.object({
   id: z.string(),
   title: z.string().min(2),
   description: z.string().nullable(),
   status: z.enum(["NOT_STARTED", "IN_PROGRESS", "DONE"]).default("NOT_STARTED"),
+});
+
+const todoUpdateSchema = z.object({
+  id: z.string(),
+  title: z.string().min(2).optional(),
+  description: z.string().nullable().optional(),
+  status: z
+    .enum(["NOT_STARTED", "IN_PROGRESS", "DONE"])
+    .optional()
+    .default("NOT_STARTED"),
 });
 
 const userSchema = z.object({
@@ -98,7 +113,7 @@ const route = app
   )
   .patch(
     "/todos",
-    zValidator("json", todoSchema, (result, c) => {
+    zValidator("json", todoUpdateSchema, (result, c) => {
       if (!result.success) {
         return c.text(result.error.issues[0].message, 400);
       }
@@ -107,9 +122,15 @@ const route = app
       const { id, title, description, status } = c.req.valid("json");
       const client = postgres(c.env.DATABASE_URL, { prepare: false });
       const db = drizzle({ client });
+      // UpdateTodoData型のオブジェクトを作成
+      const updateData: UpdateTodoData = {};
+
+      if (title !== null) updateData.title = title;
+      if (description !== null) updateData.description = description;
+      if (status !== null) updateData.status = status;
       const todo = await db
         .update(Todos)
-        .set({ title, description, status })
+        .set(updateData)
         .where(eq(Todos.id, id))
         .returning();
       return c.json({ todo: todo[0] });
