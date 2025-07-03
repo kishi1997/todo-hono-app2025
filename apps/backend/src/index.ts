@@ -74,6 +74,10 @@ const todoUpdateSchema = z.object({
     .optional()
     .default("NOT_STARTED"),
 });
+const profileUpdateSchema = z.object({
+  id: z.string(),
+  name: z.string(),
+});
 
 const userSchema = z.object({
   name: z.string(),
@@ -134,6 +138,48 @@ const route = app
         .where(eq(Todos.id, id))
         .returning();
       return c.json({ todo: todo[0] });
+    }
+  )
+  .post(
+    "/profile",
+    zValidator("json", userSchema, (result, c) => {
+      if (!result.success) {
+        return c.text(result.error.issues[0].message, 400);
+      }
+    }),
+    async (c) => {
+      const client = postgres(c.env.DATABASE_URL, { prepare: false });
+      const db = drizzle({ client });
+      const user = c.get("user");
+      const { id, email } = user;
+      if (id == null || email == null) {
+        return c.text("Unauthorized", 401);
+      }
+      const { name } = c.req.valid("json");
+      const userData = await db
+        .insert(Profile)
+        .values({ id, name, email })
+        .returning();
+      return c.json({ user: userData[0] });
+    }
+  )
+  .patch(
+    "/profile",
+    zValidator("json", profileUpdateSchema, (result, c) => {
+      if (!result.success) {
+        return c.text(result.error.issues[0].message, 400);
+      }
+    }),
+    async (c) => {
+      const { id, name } = c.req.valid("json");
+      const client = postgres(c.env.DATABASE_URL, { prepare: false });
+      const db = drizzle({ client });
+      const newProfile = await db
+        .update(Profile)
+        .set({ name })
+        .where(eq(Profile.id, id))
+        .returning();
+      return c.json({ newProfile: newProfile[0] });
     }
   )
   .post(

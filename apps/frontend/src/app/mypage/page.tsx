@@ -4,22 +4,15 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { useGetProfile } from "@/features/profile/api/use-get-profile";
-import { Skeleton } from "@/components/ui/skeleton";
 import { redirect } from "next/navigation";
 import { toast } from "sonner";
+import { Loading } from "@/components/Loading";
 
 export default function MyPage() {
   const { data, isLoading } = useGetProfile();
-  if (isLoading)
-    return (
-      <div className="w-full max-w-4xl min-h-screen flex justify-between items-center p-4">
-        <Skeleton className="h-12 w-12 rounded-full" />
-        <div className="space-y-2">
-          <Skeleton className="h-4 w-[250px]" />
-          <Skeleton className="h-4 w-[200px]" />
-        </div>
-      </div>
-    );
+  if (isLoading) {
+    return <Loading />;
+  }
   if (data == null) {
     toast.error("ログインしてください");
     redirect("/login");
@@ -59,7 +52,16 @@ export default function MyPage() {
             </section>
 
             <div className="text-right">
-              <Button className="bg-white/20 text-gray-400 hover:cursor-pointer hover:bg-white/30 hover:text-white">
+              <Button
+                onClick={() => {
+                  redirect(
+                    `/mypage/edit?name=${encodeURIComponent(
+                      data.user.name
+                    )}&id=${data.user.id}`
+                  );
+                }}
+                className="bg-white/20 text-gray-400 hover:cursor-pointer hover:bg-white/30 hover:text-white"
+              >
                 Edit Profile
               </Button>
             </div>

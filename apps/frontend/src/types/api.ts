@@ -30,3 +30,7 @@ export type TodosDeleteResponse = InferResponseType<
 
 // profile取得APIのレスポンスボディの型
 export type ProfileGetResponse = InferResponseType<typeof client.profile.$get>;
+// profile更新APIのリクエストボディの型
+export type ProfilePatchRequest = InferRequestType<
+  typeof client.profile.$patch
+>;
