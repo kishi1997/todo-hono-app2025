@@ -7,6 +7,19 @@ import { useGetProfile } from "@/features/profile/api/use-get-profile";
 import { redirect } from "next/navigation";
 import { toast } from "sonner";
 import { Loading } from "@/components/Loading";
+import { BreadcrumbComponent } from "@/components/Breadcrumb";
+
+const breadcrumbProps = {
+  child: [
+    {
+      path: "/",
+      title: "Home",
+    },
+  ],
+  noChild: {
+    title: "My Page",
+  },
+};
 
 export default function MyPage() {
   const { data, isLoading } = useGetProfile();
@@ -19,6 +32,10 @@ export default function MyPage() {
   }
   return (
     <div className="w-full max-w-4xl min-h-screen text-white px-6 py-12 flex flex-col items-center justify-center">
+      <BreadcrumbComponent
+        child={breadcrumbProps.child}
+        noChild={breadcrumbProps.noChild}
+      />
       <div className="w-full space-y-8">
         <header className="text-center bg-black border border-zinc-700 py-4">
           <h1 className="text-4xl font-bold tracking-tight">My Page</h1>
