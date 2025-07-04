@@ -7,16 +7,7 @@ import { useSearchParams } from "next/navigation";
 import { useActionState, useRef, useState } from "react";
 import { toast } from "sonner";
 import { usePatchProfile } from "@/features/profile/api/use-patch-profile";
-import {
-  Breadcrumb,
-  BreadcrumbItem,
-  BreadcrumbLink,
-  BreadcrumbList,
-  BreadcrumbPage,
-  BreadcrumbSeparator,
-} from "@/components/ui/breadcrumb";
-import { SlashIcon } from "lucide-react";
-import Link from "next/link";
+import { BreadcrumbComponent } from "@/components/Breadcrumb";
 
 type FormState = {
   message: string;
@@ -28,6 +19,21 @@ const initialState: FormState = {
   isSuccess: false,
 };
 
+const breadcrumbProps = {
+  child: [
+    {
+      path: "/",
+      title: "Home",
+    },
+    {
+      path: "/mypage",
+      title: "My Page",
+    },
+  ],
+  noChild: {
+    title: "Edit Profile",
+  },
+};
 export default function MyPage() {
   const { mutate } = usePatchProfile();
   const searchParams = useSearchParams();
@@ -64,35 +70,12 @@ export default function MyPage() {
   const [, submitAction, isPending] = useActionState(formAction, initialState);
 
   return (
-    <div className="relative w-full max-w-4xl min-h-screen text-white px-6 py-12 flex flex-col items-center justify-center">
-      <Breadcrumb className="absolute left-6 top-12">
-        <BreadcrumbList>
-          <BreadcrumbItem>
-            <BreadcrumbLink asChild>
-              <Link href="/" className="text-zinc-400 hover:text-white">
-                Home
-              </Link>
-            </BreadcrumbLink>
-          </BreadcrumbItem>
-          <BreadcrumbSeparator>
-            <SlashIcon />
-          </BreadcrumbSeparator>
-          <BreadcrumbItem>
-            <BreadcrumbLink asChild>
-              <Link href="/mypage" className="text-zinc-400 hover:text-white">
-                Mypage
-              </Link>
-            </BreadcrumbLink>
-          </BreadcrumbItem>
-          <BreadcrumbSeparator>
-            <SlashIcon />
-          </BreadcrumbSeparator>
-          <BreadcrumbItem>
-            <BreadcrumbPage className="text-white">edit</BreadcrumbPage>
-          </BreadcrumbItem>
-        </BreadcrumbList>
-      </Breadcrumb>
-      <div className="w-full space-y-8">
+    <div className="relative w-full min-h-screen text-white px-6 py-12 flex flex-col items-center justify-center">
+      <BreadcrumbComponent
+        child={breadcrumbProps.child}
+        noChild={breadcrumbProps.noChild}
+      />
+      <div className="w-full max-w-4xl space-y-8">
         <Card className="bg-gradient-to-br from-zinc-900 via-black to-zinc-800 backdrop-blur-md border border-zinc-700 rounded-2xl shadow-xl transition hover:shadow-2xl">
           <CardContent className="mt-4 space-y-6">
             <h1 className="text-zinc-400 uppercase text-l mb-1">
