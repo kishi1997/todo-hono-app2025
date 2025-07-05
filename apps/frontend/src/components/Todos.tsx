@@ -34,13 +34,9 @@ export const Todos = () => {
     );
   }
 
-  // const sortedTodos = [...data.todos].sort((a, b) =>
-  //   a.isCompleted === b.isCompleted ? 0 : a.isCompleted ? 1 : -1
-  // );
-
   return (
     <div className="pt-4 pb-8">
-      <h2 className="text-2xl font-bold mb-2">Your Todos</h2>
+      <h2 className="text-2xl font-bold mb-2">Today&apos;s Task</h2>
       {data.todos.map((todo) => (
         <TodoItem key={todo.id} todo={todo} />
       ))}

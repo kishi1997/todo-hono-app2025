@@ -63,7 +63,7 @@ export const TodoInput = () => {
       <Input
         type="text"
         name="title"
-        placeholder="新しいタスクを追加しよう！"
+        placeholder="Add a today's todo！"
         value={title}
         onChange={(e) => setTitle(e.target.value)}
         disabled={isPending}
@@ -76,7 +76,7 @@ export const TodoInput = () => {
         type="submit"
         disabled={isPending || title.length === 0}
       >
-        {isPending ? "追加中..." : "追加"}
+        {isPending ? "Adding..." : "Add"}
       </Button>
     </form>
   );
