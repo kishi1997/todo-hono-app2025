@@ -3,10 +3,11 @@
 import { useGetTodos } from "@/features/todos/api/use-get-todos";
 import { TodoItem } from "./TodoItem";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useTodoStore } from "@/store/todos";
 
 export const Todos = () => {
-  const { data, isLoading, error } = useGetTodos();
-
+  const { isLoading, error } = useGetTodos();
+  const todos = useTodoStore((state) => state.todos);
   if (isLoading) {
     // ローディング中のスケルトン表示
     return (
@@ -26,7 +27,7 @@ export const Todos = () => {
     );
   }
 
-  if (!data || data.todos.length === 0) {
+  if (!todos || todos.length === 0) {
     return (
       <div className="mt-10 text-center text-muted-foreground">
         タスクはありません。最初のタスクを追加してみましょう！
@@ -37,8 +38,8 @@ export const Todos = () => {
   return (
     <div className="pt-4 pb-8">
       <h2 className="text-2xl font-bold mb-2">Today&apos;s Task</h2>
-      {data.todos.map((todo) => (
-        <TodoItem key={todo.id} todo={todo} />
+      {todos.map((todo) => (
+        <TodoItem key={todo.id} {...todo} />
       ))}
     </div>
   );

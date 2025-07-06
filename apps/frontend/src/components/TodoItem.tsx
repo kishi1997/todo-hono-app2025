@@ -2,7 +2,7 @@
 
 import { cn } from "@/lib/utils";
 import { Trash2 } from "lucide-react";
-import { TodoPostResponse } from "@/types/api";
+import { Todo } from "@/types/api";
 // import { StatusBadge } from "./custom/StatusBadge";
 import { useState } from "react";
 import { useUpdateTodo } from "@/features/todos/api/use-update-todos";
@@ -13,13 +13,16 @@ import {
   AlertDialogAction,
   AlertDialogCancel,
   AlertDialogContent,
+  AlertDialogDescription,
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
+import { useTodoStore } from "@/store/todos";
 
-export const TodoItem = ({ todo }: TodoPostResponse) => {
+export const TodoItem = (todo: Todo) => {
+  const deleteTodoStore = useTodoStore((state) => state.deleteTodo);
   const { mutate: updateMutate } = useUpdateTodo();
   const { mutate: deleteMutate } = useDeleteTodo();
   const [todoTitle, setTodoTitle] = useState<string>(todo.title);
@@ -47,6 +50,7 @@ export const TodoItem = ({ todo }: TodoPostResponse) => {
       { id: todo.id },
       {
         onSuccess: () => {
+          deleteTodoStore(todo.id);
           toast.success("タスクを削除しました！");
         },
         onError: (err) => {
@@ -80,6 +84,10 @@ export const TodoItem = ({ todo }: TodoPostResponse) => {
         <AlertDialogContent className="bg-black">
           <AlertDialogHeader>
             <AlertDialogTitle>Do you really want to delete?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This action cannot be undone. This will delete your data from our
+              servers.
+            </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel className="text-black hover:cursor-pointer">

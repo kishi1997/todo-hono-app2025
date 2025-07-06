@@ -1,4 +1,4 @@
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation } from "@tanstack/react-query";
 import { createTodo } from "../action";
 import { TodoPostResponse } from "@/types/api";
 
@@ -10,7 +10,7 @@ type CreateTodoVariables = {
 };
 
 export const useCreateTodo = () => {
-  const queryClient = useQueryClient();
+  // const queryClient = useQueryClient();
 
   return useMutation<TodoPostResponse, Error, CreateTodoVariables>({
     mutationFn: async (variables: { title: string; description: string }) => {
@@ -19,8 +19,9 @@ export const useCreateTodo = () => {
       const response = await createTodo(newTodoData);
       return response;
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["todos"] });
-    },
+    // zustandで管理するため必要ない
+    // onSuccess: () => {
+    //   queryClient.invalidateQueries({ queryKey: ["todos"] });
+    // },
   });
 };

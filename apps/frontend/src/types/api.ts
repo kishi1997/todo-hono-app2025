@@ -3,34 +3,35 @@ import { InferResponseType, InferRequestType } from "hono";
 
 export type Todo = {
   id: string;
+  createdAt: string;
+  updatedAt: string;
+  profileId: string;
   title: string;
   description: string | null;
-  status?: "NOT_STARTED" | "IN_PROGRESS" | "DONE" | undefined;
+  status: "NOT_STARTED" | "IN_PROGRESS" | "DONE";
 };
 
-// 例：Todo作成APIのレスポンスボディの型
+//----------- Todo作成API -----------
 export type TodoPostResponse = InferResponseType<typeof client.todos.$post>;
-
-// 例：Todo作成APIのリクエストボディ（`json`）の型
 export type TodoPostRequest = InferRequestType<
   typeof client.todos.$post
 >["json"];
 
-// 例：全Todo取得APIのレスポンスボディの型
+//----------- Todo取得API -----------
 export type TodosGetResponse = InferResponseType<typeof client.todos.$get>;
 
-// 例：Todo更新APIの型
+//----------- Todo更新API -----------
 export type TodosPatchRequest = InferRequestType<typeof client.todos.$patch>;
 export type TodosPatchResponse = InferResponseType<typeof client.todos.$patch>;
-// 例：Todo削除APIの型
+
+//----------- Todo削除API -----------
 export type TodosDeleteRequest = InferRequestType<typeof client.todos.$delete>;
 export type TodosDeleteResponse = InferResponseType<
   typeof client.todos.$delete
 >;
 
-// profile取得APIのレスポンスボディの型
+//----------- profile取得API -----------
 export type ProfileGetResponse = InferResponseType<typeof client.profile.$get>;
-// profile更新APIのリクエストボディの型
 export type ProfilePatchRequest = InferRequestType<
   typeof client.profile.$patch
 >;

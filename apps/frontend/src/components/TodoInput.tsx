@@ -1,10 +1,11 @@
 "use client";
 
-import { useActionState, useState, useRef } from "react";
+import { useActionState, useState, useRef, useEffect } from "react";
 import { useCreateTodo } from "@/features/todos/api/use-create-todos";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
+import { useTodoStore } from "@/store/todos";
 
 type FormState = {
   message: string;
@@ -17,9 +18,15 @@ const initialState: FormState = {
 };
 
 export const TodoInput = () => {
+  const todos = useTodoStore((state) => state.todos);
+  useEffect(() => {
+    setIsAvailable(todos.length !== 1);
+  }, [todos.length]);
   const { mutate } = useCreateTodo();
   const [title, setTitle] = useState("");
+  const [isAvailable, setIsAvailable] = useState<boolean>(true);
   const formRef = useRef<HTMLFormElement>(null);
+  const addTodoStore = useTodoStore((state) => state.addTodo);
 
   const formAction = async (
     prevState: FormState,
@@ -35,7 +42,8 @@ export const TodoInput = () => {
         // Descriptionは不要なので空文字やnullを渡す
         { title, description: "" },
         {
-          onSuccess: () => {
+          onSuccess: (newTodo) => {
+            addTodoStore(newTodo.todo);
             // 成功時にフォームをリセット
             formRef.current?.reset();
             setTitle("");
@@ -63,10 +71,12 @@ export const TodoInput = () => {
       <Input
         type="text"
         name="title"
-        placeholder="Add a today's todo！"
+        placeholder={
+          !isAvailable ? "Finish your task first" : "Add a today's todo！"
+        }
         value={title}
         onChange={(e) => setTitle(e.target.value)}
-        disabled={isPending}
+        disabled={isPending || !isAvailable}
         required
         className="flex-grow rounded-lg border-none bg-white/10 px-4 py-2 text-white 
         backdrop-blur-sm placeholder:text-xs placeholder:text-gray-400 focus-visible:shadow-none focus-visible:outline-none focus-visible:border-none focus-visible:ring-0"
@@ -74,7 +84,7 @@ export const TodoInput = () => {
       <Button
         className="hover:cursor-pointer hover:filter hover:brightness-75"
         type="submit"
-        disabled={isPending || title.length === 0}
+        disabled={isPending || title.length === 0 || !isAvailable}
       >
         {isPending ? "Adding..." : "Add"}
       </Button>
